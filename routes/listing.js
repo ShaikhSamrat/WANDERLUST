@@ -22,6 +22,9 @@ router
 //New Route
 router.get("/new", isLoggedIn, (listingController.renderNewForm));
 
+// Search Route - Add this after the main routes but before the :id routes
+router.get("/search", wrapAsync(listingController.searchListings));
+
 router.route("/:id")
 .get(wrapAsync(listingController.showListing))
 .put(isLoggedIn,isOnwer,upload.single("listing[image]"), vaildateListing, wrapAsync(listingController.updateListing))

@@ -74,3 +74,29 @@ module.exports.destroyListing = async (req, res) => {
     req.flash("success", "Listing Deleted");
     res.redirect("/listings");
 };
+
+module.exports.searchListings = async (req, res) => {
+    let { q } = req.query;
+    
+    if (!q || q.trim() === "") {
+        req.flash("error", "Please enter a search term");
+        return res.redirect("/listings");
+    }
+
+    q = q.trim();
+
+    // Search in title, location, country (case insensitive)
+    const allListings = await Listing.find({
+        $or: [
+            { title: { $regex: q, $options: 'i' } },
+            { location: { $regex: q, $options: 'i' } },
+            { country: { $regex: q, $options: 'i' } },
+            { description: { $regex: q, $options: 'i' } }
+        ]
+    });
+
+    res.render("listings/index.ejs", { 
+        allListings,
+        query: q   // Pass the search query so we can show it in navbar and maybe a heading
+    });
+};
