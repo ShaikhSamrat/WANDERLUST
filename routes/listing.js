@@ -19,19 +19,21 @@ router
     wrapAsync(listingController.createListing)
 );
 
-//New Route
-router.get("/new", isLoggedIn, (listingController.renderNewForm));
+// New Route
+router.get("/new", isLoggedIn, listingController.renderNewForm);
 
-// Search Route - Add this after the main routes but before the :id routes
+// Search Route
 router.get("/search", wrapAsync(listingController.searchListings));
 
-router.route("/:id")
-.get(wrapAsync(listingController.showListing))
-.put(isLoggedIn,isOnwer,upload.single("listing[image]"), vaildateListing, wrapAsync(listingController.updateListing))
-.delete(isLoggedIn,isOnwer, wrapAsync(listingController.destroyListing));
+// NEW: Category Filter Route
+router.get("/category/:category", wrapAsync(listingController.filterByCategory));
 
-//Edit Route
-router.get("/:id/edit",isLoggedIn,isOnwer, wrapAsync(listingController.renderEditForm));
+router.route("/:id")
+  .get(wrapAsync(listingController.showListing))
+  .put(isLoggedIn, isOnwer, upload.single("listing[image]"), vaildateListing, wrapAsync(listingController.updateListing))
+  .delete(isLoggedIn, isOnwer, wrapAsync(listingController.destroyListing));
+
+// Edit Route
+router.get("/:id/edit", isLoggedIn, isOnwer, wrapAsync(listingController.renderEditForm));
 
 module.exports = router;
-

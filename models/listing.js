@@ -15,6 +15,21 @@ const listingSchema = new Schema({
     price: Number,
     location: String,
     country: String,
+    category: {
+        type: String,
+        enum: [
+            "Rooms", 
+            "Iconic cities", 
+            "Mountains", 
+            "Castle", 
+            "Amazing Pools", 
+            "Camping", 
+            "Boat", 
+            "Arctic", 
+            "Domes"
+        ],
+        default: "Rooms"
+    },
     reviews: [
         {
             type: Schema.Types.ObjectId,
@@ -25,7 +40,7 @@ const listingSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User",
     },
-    });
+});
 
 listingSchema.post("findOneAndDelete", async (listing) => {
     if (listing){
