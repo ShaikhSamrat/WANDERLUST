@@ -132,3 +132,11 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
+
+/* ONLY NEW CSS ADDED */
+.small-tax-text{
+    font-size: 0.85rem;     /* smaller text */
+    color: #8a8a8a;         /* grey */
+    font-family: 'Poppins', sans-serif;
+    margin-left: 4px;
+}

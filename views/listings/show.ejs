@@ -7,19 +7,30 @@
 
     <div class="card col-6 offset-3 show-card listing-card">
         <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image"/>
+        
         <div class="card-body">
-            <p class="card-text">Owned by <i><%= listing.owner.username %></i></p>      
+            <!-- Safe owner display -->
+            <p class="card-text">
+                Owned by <i><%= listing.owner && listing.owner.username ? listing.owner.username : "Unknown User" %></i>
+            </p>      
+            
             <p class="card-text"><%= listing.description %></p>
-            <p class="card-text">&#8377; <%= listing.price.toLocaleString("en-IN") %></p>
+            <p class="card-text">&#8377; <%= listing.price.toLocaleString("en-IN") %> night</p>
             <p class="card-text"><%= listing.location %>, <%= listing.country %></p>
+            
+            <% if(listing.category) { %>
+                <p class="card-text">
+                    <strong>Category:</strong> <%= listing.category %>
+                </p>
+            <% } %>
         </div>
     </div>
 
     <br />
 
-    <% if(currUser && listing.owner._id.equals(currUser._id)) { %>
+    <% if(currUser && listing.owner && listing.owner._id && listing.owner._id.equals(currUser._id)) { %>
     <div class="btns">
-        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>  
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn border-0">Edit</a>  
         <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
             <button class="btn btn-dark offset-5">Delete</button>
         </form>
@@ -30,7 +41,6 @@
         <% if(currUser) { %>
             <hr />
             <h4>Leave a Review</h4>
-            <!-- Your review form remains the same -->
             <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
                 <div class="mb-3 mt-3">
                     <label for="rating" class="form-label">Rating</label>
@@ -58,17 +68,17 @@
             <hr />
         <% } %>
 
-        <% if (listing.reviews.length > 0) { %>
+        <% if (listing.reviews && listing.reviews.length > 0) { %>
             <div class="row">
                 <p><b>All Reviews</b></p>
                 <% for(let review of listing.reviews) { %>
                     <div class="card col-5 mb-3">
                         <div class="card-body">
-                            <h5 class="card-title">@<%= review.author.username %></h5>
+                            <h5 class="card-title">@<%= review.author && review.author.username ? review.author.username : "Anonymous" %></h5>
                             <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>   
                             <p class="card-text"><%= review.comment %></p>
                         </div>
-                        <% if(currUser && review.author._id.equals(currUser._id)) { %>
+                        <% if(currUser && review.author && review.author._id && review.author._id.equals(currUser._id)) { %>
                             <form class="mb-3" method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
                                 <button class="btn btn-sm btn-dark">Delete</button>
                             </form>
@@ -79,28 +89,27 @@
         <% } %>
     </div>
 
-    <!-- ==================== OPENSTREETMAP SECTION ==================== -->
+    <!-- ==================== MAP SECTION ==================== -->
     <div class="col-8 offset-3 mb-3">
         <h3>Where you'll be</h3>
         <div id="map" style="height: 400px; width: 100%; border-radius: 10px; margin-top: 10px;"></div>
     </div>
 </div>
 
-<!-- Leaflet CSS & JS CDN -->
+<!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 // Initialize the map
-const map = L.map('map').setView([20.5937, 78.9629], 5); // Default center: India
+const map = L.map('map').setView([20.5937, 78.9629], 5);
 
-// Add OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
 }).addTo(map);
 
-// Function to get coordinates from location + country using Nominatim (OpenStreetMap search)
+// Get coordinates and place marker
 async function getCoordinates(location, country) {
     const query = `${location}, ${country}`;
     try {
@@ -110,24 +119,18 @@ async function getCoordinates(location, country) {
         if (data && data.length > 0) {
             const { lat, lon } = data[0];
             return [parseFloat(lat), parseFloat(lon)];
-        } else {
-            console.log("Location not found, using default");
-            return [20.5937, 78.9629]; // India fallback
         }
     } catch (err) {
         console.error("Geocoding error:", err);
-        return [20.5937, 78.9629];
     }
+    return [20.5937, 78.9629]; // Default to India
 }
 
-// Main map logic
 (async () => {
     const coords = await getCoordinates("<%= listing.location %>", "<%= listing.country %>");
     
-    // Center map on the location
     map.setView(coords, 13);
 
-    // Add marker with popup
     L.marker(coords).addTo(map)
         .bindPopup(`
             <b><%= listing.title %></b><br>
