@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
-const {isLoggedIn, isOnwer, vaildateListing} = require("../middleware.js");
+const {isLoggedIn, isOwner, validateListing} = require("../middleware.js");
 
 const listingController = require("../controllers/listings.js");
 const multer  = require("multer");
@@ -14,7 +14,7 @@ router.route("/")
 // New Route
 router.route("/new")
   .get(isLoggedIn, listingController.renderNewForm)
-  .post(isLoggedIn, upload.single("listing[image]"), vaildateListing, wrapAsync(listingController.createListing));
+  .post(isLoggedIn, upload.single("listing[image]"), validateListing, wrapAsync(listingController.createListing));
 
 // Search Route
 router.get("/search", wrapAsync(listingController.searchListings));
@@ -24,10 +24,10 @@ router.get("/category/:category", wrapAsync(listingController.filterByCategory))
 
 router.route("/:id")
   .get(wrapAsync(listingController.showListing))
-  .put(isLoggedIn, isOnwer, upload.single("listing[image]"), vaildateListing, wrapAsync(listingController.updateListing))
-  .delete(isLoggedIn, isOnwer, wrapAsync(listingController.destroyListing));
+  .put(isLoggedIn, isOwner, upload.single("listing[image]"), validateListing, wrapAsync(listingController.updateListing))
+  .delete(isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
 
 // Edit Route
-router.get("/:id/edit", isLoggedIn, isOnwer, wrapAsync(listingController.renderEditForm));
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm));
 
 module.exports = router;
